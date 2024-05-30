@@ -1,8 +1,11 @@
 package com.yash.cardsstack
 
+import android.annotation.SuppressLint
+import android.os.Build
+import android.text.format.Time
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -23,6 +25,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,32 +38,42 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yash.cardsstack.ui.theme.fontFamily
 import kotlinx.coroutines.delay
+import java.util.Timer
+import java.util.concurrent.TimeUnit
 
+@SuppressLint("DefaultLocale")
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun CardStack(modifier: Modifier = Modifier) {
+fun CardStack(
+    taskName: String,
+    timerInMinutes:Int = 25,
+    backgroundColor:Color = Color(0xFF773EDF),
+    tiltAngle: Float = -10f,
+    dampingRation:Float = 0.1f,
+    stiffness:Float = 50f,
+    modifier: Modifier = Modifier
+) {
     // State to control the rotation angle
-    var rotationAngle by remember { mutableStateOf(0f) }
+    var rotationAngle by remember { mutableFloatStateOf(0f) }
 
     // Animate the rotation angle to 10 degrees
     val animatedRotationAngle by animateFloatAsState(
         targetValue = rotationAngle,
         animationSpec = spring(
-            dampingRatio = 0.1f, // Adjust damping ratio for bounce effect
-            stiffness = 50f // Adjust stiffness for bounce effect
-        )
+            dampingRatio = dampingRation, // Adjust damping ratio for bounce effect
+            stiffness = stiffness // Adjust stiffness for bounce effect
+        ), label = "HI"
         // Adjust duration as needed
     )
-    val secondRectColor = Color(0xFF773EDF)
+    val secondRectColor = backgroundColor
     val blendedColor = lerp(
         Color.White,
         secondRectColor,
@@ -68,14 +82,14 @@ fun CardStack(modifier: Modifier = Modifier) {
 
     // State to control timer
     var timeLeft by remember {
-        mutableStateOf(25 * 60) // 25 minutes in seconds
+        mutableIntStateOf(timerInMinutes * 60) // 25 minutes in seconds
     }
     var isRunning by remember {
         mutableStateOf(false)
     }
     // Trigger the animation when the composable enters the composition
     LaunchedEffect(Unit) {
-        rotationAngle = -10f
+        rotationAngle = tiltAngle
     }
 
     // Timer Logic
@@ -159,17 +173,19 @@ fun CardStack(modifier: Modifier = Modifier) {
             }
             Spacer(modifier = Modifier.height(64.dp))
             Text(
-                text = "Research", fontSize = 24.sp,
+                text = taskName, fontSize = 24.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.White,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                fontFamily = fontFamily
             )
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Preview
 @Composable
 private fun CardStackPreview() {
-    CardStack()
+    CardStack(taskName = "Research", timerInMinutes = 25, backgroundColor = Color(0xFF773EDF))
 }
